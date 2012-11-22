@@ -21,7 +21,7 @@ Person.prototype.age = function(){
 var person = new Person();
 person.age(); //returns 42
 
-//create Mocco class
+//create Mocco object
 var mock = mocco.mock(person);
 
 //we need a special implementation of age() for tests:
