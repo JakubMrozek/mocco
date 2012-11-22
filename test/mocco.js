@@ -1,58 +1,83 @@
 var mocco = require('../');
 
-var TestCls = function(){}
+/**
+ * Test classes.
+ */
 
-TestCls.prototype.getSth = function(){
+var Person = function(){}
+Person.prototype.age = function(){
   return 42;    
 }
-
-TestCls.prototype.getStr = function(){
-  return 'haha';    
+Person.prototype.name = function(){
+  return 'James Bond';    
+}
+Person.carName = function(){
+  return 'Aston Martin';    
 }
 
-var TestCls2 = function(){}
-
-TestCls2.prototype.getSth = function(){
-  return 42;    
+var Dog = function(){}
+Dog.prototype.speak = function(){
+  return 'haf';    
 }
 
+
+/**
+ * Tests.
+ */
 
 describe('mocco', function() {
-  it('should hijack() one method of class with two params', function() {
-    var testCls = new TestCls();
-    var mockCls = mocco.mock(testCls);  
     
-    mockCls.hijack('getSth', function(){
+  it('should hijack() one method of object with two params', function(){
+    var person = new Person();
+    var mock = mocco.mock(person);  
+    
+    mock.hijack('age', function(){
       return 22;    
     });
     
-    testCls.getSth().should.eql(22);
-    mockCls.restore();
-    testCls.getSth().should.eql(42);
+    person.age().should.eql(22);
+    mock.restore();
+    person.age().should.eql(42);
     
   });
   
-  it('should hijack() one method of class with one param (fc)', function() {
-    var testCls = new TestCls();
-    var mockCls = mocco.mock(testCls);  
+  
+  it('should hijack() one method of class with two params', function(){
+    var person = new Person();
+    var mock = mocco.mock(Person);  
     
-    mockCls.hijack(function getSth(){
+    mock.hijack('carName', function(){
+      return 'Porsche';    
+    });
+    
+    Person.carName().should.eql('Porsche');
+    mock.restore();
+    Person.carName().should.eql('Aston Martin');
+  });
+  
+  
+  it('should hijack() one method of object with one param (fc)', function(){
+    var person = new Person();
+    var mock = mocco.mock(person); 
+    
+    mock.hijack(function age(){
       return 22;    
     });
     
-    testCls.getSth().should.eql(22);
-    mockCls.restore();
-    testCls.getSth().should.eql(42);
+    person.age().should.eql(22);
+    mock.restore();
+    person.age().should.eql(42);
     
   });  
   
+  
   it('should throw exception if hijack() has wrong params', function(){
-    var testCls = new TestCls();
-    var mockCls = mocco.mock(testCls);  
+    var person = new Person();
+    var mock = mocco.mock(person); 
     
     var err = null;
     try {
-      mockCls.hijack(1, 2);
+      mock.hijack(1, 2);
       
     } catch(e) {
       err = e;
@@ -62,13 +87,14 @@ describe('mocco', function() {
 
   });
   
+  
   it('should throw exception if hijack() has one anonymous function', function(){
-    var testCls = new TestCls();
-    var mockCls = mocco.mock(testCls);  
+    var person = new Person();
+    var mock = mocco.mock(person);  
     
     var err = null;
     try {
-      mockCls.hijack(function(){
+      mocco.hijack(function(){
         return 22;    
       });
       
@@ -78,16 +104,16 @@ describe('mocco', function() {
       err.should.be.instanceof(Error);    
     }
     
-  });  
+  });    
+  
   
   it ('should throw exception if hijacked method doesnt exist in original object', function(){
-    
-    var testCls = new TestCls();
-    var mockCls = mocco.mock(testCls);  
+    var person = new Person();
+    var mock = mocco.mock(person);  
     
     var err = null;
     try {
-      mockCls.hijack(function abc(){
+      mocco.hijack(function abc(){
         return 22;    
       });
       
@@ -100,13 +126,12 @@ describe('mocco', function() {
   });
   
   it ('should throw exception if method hasnt been hijacted.', function(){
-    
-    var testCls = new TestCls();
-    var mockCls = mocco.mock(testCls);  
+    var person = new Person();
+    var mock = mocco.mock(person);  
     
     var err = null;
     try {
-      mockCls.restore('abc');
+      mock.restore('abc');
       
     } catch(e) {
       err = e;
@@ -116,78 +141,81 @@ describe('mocco', function() {
     
   });
   
+  
   it ('should restore only one method', function(){
-    var testCls = new TestCls();
-    var mockCls = mocco.mock(testCls); 
+    var person = new Person();
+    var mock = mocco.mock(person); 
     
-    mockCls.hijack('getSth', function(){
-      return 22;    
+    mock.hijack('age', function(){
+      return 25;    
+    });
+    
+    mock.hijack('name', function(){
+      return 'Jakub Mrozek';    
     });
       
-    mockCls.hijack('getStr', function(){
-      return 'uff';    
-    });
-      
-    testCls.getSth().should.eql(22);
-    testCls.getStr().should.eql('uff');
-    mockCls.restore('getSth');    
-    testCls.getSth().should.eql(42);
-    testCls.getStr().should.eql('uff');
-    mockCls.restore('getStr'); 
-    testCls.getStr().should.eql('haha');
+    person.age().should.eql(25);
+    person.name().should.eql('Jakub Mrozek');
+    mock.restore('age');    
+    
+    person.age().should.eql(42);
+    person.name().should.eql('Jakub Mrozek');
+    mock.restore('name'); 
+    
+    person.name().should.eql('James Bond');
       
   });
+  
   
   it ('should restore all methods of object', function(){
-      
-    var testCls = new TestCls();
-    var mockCls = mocco.mock(testCls); 
+    var person = new Person();
+    var mock = mocco.mock(person); 
     
-    mockCls.hijack('getSth', function(){
+    mock.hijack('age', function(){
       return 22;    
     });
       
-    mockCls.hijack('getStr', function(){
-      return 'uff';    
+    mock.hijack('name', function(){
+      return 'Jakub Mrozek';    
     });
       
-    testCls.getSth().should.eql(22);
-    testCls.getStr().should.eql('uff');
-    mockCls.restore();    
-    testCls.getSth().should.eql(42);
-    testCls.getStr().should.eql('haha');
+    person.age().should.eql(22);
+    person.name().should.eql('Jakub Mrozek');
+    mock.restore();    
+    person.age().should.eql(42);
+    person.name().should.eql('James Bond');
       
-  });
+  });  
   
+
   it ('should restore all objects', function(){
-      
-    var testCls = new TestCls();
-    var mockCls = mocco.mock(testCls); 
-    var testCls2 = new TestCls2();
-    var mockCls2 = mocco.mock(testCls2); 
+    var person = new Person();
+    var mock = mocco.mock(person); 
     
-    mockCls.hijack('getSth', function(){
+    var dog = new Dog();
+    var dogMock = mocco.mock(dog); 
+    
+    mock.hijack('age', function(){
       return 22;    
     });
       
-    mockCls.hijack('getStr', function(){
-      return 'uff';    
+    mock.hijack('name', function(){
+      return 'Jakub Mrozek';    
     });     
     
-    mockCls2.hijack('getSth', function(){
-      return 21;    
+    dogMock.hijack('speak', function(){
+      return 'mnaaau';    
     });
       
-    testCls.getSth().should.eql(22);
-    testCls.getStr().should.eql('uff');      
-    testCls2.getSth().should.eql(21);  
+    person.age().should.eql(22);
+    person.name().should.eql('Jakub Mrozek');      
+    dog.speak().should.eql('mnaaau');  
     mocco.restore();
     
-    testCls.getSth().should.eql(42);
-    testCls.getStr().should.eql('haha');      
-    testCls2.getSth().should.eql(42);  
+    person.age().should.eql(42);
+    person.name().should.eql('James Bond');      
+    dog.speak().should.eql('haf');  
       
   });
-  
   
 }); 
